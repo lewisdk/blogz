@@ -2,36 +2,24 @@
 
 { % block content % }
 
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        .error { color: red; }
-    </style>
-</head>
+{% block content %}
 
-<h1>Signup</h1>
-<form action= "/" method = "post">
+<h1>Users</h1>
 
-    <label for="username">Username:</label>
-    <input id="username" type="text" name="username" value="{{username}}"/>
-    <p class="error">{{username_error}}</p>
-    </br>
-    <label for="password" >Password:</label>
-    <input id="password" type="password" name="password" value="{{password}}"/>
-    <p class="error">{{password_error}}</p>
-    </br>
-    <label for="verify">Verify password:</label>
-    <input id="verify" type="password" name="verify" value="{{verify}}"/>
-    <p class="error">{{verify_error}}</p>
-    </br>
-    <label for="email">Email (optional):</label>
-    <input id="email" type="text" name="email" value="{{email}}"/>
-    <p class="error">{{email_error}}</p>
-    </br>
-    <button type="submit">Submit</button>
-</form>
-</body>
-</html>
+{% if users|length == 0 %}
+<p>No Users yet</p>
+{% else %}
+
+    <ul>
+          <ul>
+    {% for user in users %}
+        <a href="{{ url_for('User', owner_id=owner.id) }}">
+                <h2 class="user-username">
+                  {{ user.username }}</h2></a>
+                  
+        {% endfor %}
+    </ul>
+
+{% endif %}
 
 { % endblock % }

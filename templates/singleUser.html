@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<hr />
+<h1>Blogs written by {{user.username}}</h1>
+
+{% if blogs|length == 0 %}
+<p>No blogs yet</p>
+{% else %}
+
+    <ul>
+    {% for blog in blogs%}
+        <a href="{{ url_for('blog', blog_id=blog.id) }}">
+                <h2 class="blog-blogtitle">
+                  {{ blog.blogtitle }}</h2></a>
+                <h3 class="blog-content">
+                    {{ blog.content|safe}}
+                </h3>
+                  
+    {% endfor %}
+    </ul>
+
+{% endif %}
+
+{% endblock %}

@@ -44,8 +44,8 @@ def require_login():
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
-@app.route('/')
-def index():
+@app.route('/blog')
+def blog_page():
     blogs = Blog.query.all()
     return render_template('', blogs=blogs)
 
@@ -73,7 +73,7 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             session['username'] = username
-            return redirect('/base')
+            return redirect('/blog')
     render_template('signup.html')
 
 def good_username(username):
