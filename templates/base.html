@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+    <head>
+        <title>{{title}}</title>
+    </head>
+<body>
+    <nav class="navbar">
+    <a href="{{ url_for('index') }}">Main Page</a>
+    <a href="{{ url_for('add') }}">Add New Blog</a>
+    </nav>
+    {% block content %}
+
+    <h1>Blog Entries</h1>
+   
+    {% if blogs|length == 0 %}
+    <p>No blogs yet</p>
+    {% else %}
+
+        <ul>
+              <ul>
+        {% for blog in blogs%}
+            <a href="{{ url_for('blog', blog_id=blog.id) }}">
+                    <h2 class="blog-blogtitle">
+                      {{ blog.blogtitle }}</h2></a>
+                    <h3 class="blog-content">
+                        {{ blog.content}}
+                    </h3>
+                      
+            {% endfor %}
+        </ul>
+
+    {% endif %}
+
+    {% endblock %}
+
+</body>
+</html>

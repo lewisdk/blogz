@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<hr />
+<h1>{{blog.blogtitle}}</h1>
+<article>
+<h3>{{blog.content|safe}}</h3>
+</article>
+
+
+{% endblock %}
