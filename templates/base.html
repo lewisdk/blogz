@@ -5,9 +5,17 @@
     </head>
 <body>
     <nav class="navbar">
-    <a href="{{ url_for('index') }}">Main Page</a>
+    <a href="{{ url_for('index') }}">Home</a>
     <a href="{{ url_for('add') }}">Add New Blog</a>
     </nav>
+
+    <nav class="navbar">
+            <align="right">
+            <a href="{{ url_for('login')"></a>
+            <a href="{{ url_for('/logout')"></a>
+        
+    </nav>
+
     {% block content %}
 
     <h1>Blog Entries</h1>

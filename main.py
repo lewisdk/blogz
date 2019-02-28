@@ -4,10 +4,6 @@ import cgi
 import os
 import jinja2
 
-template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader
-(template_dir), autoescape=True)
-
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:MyNewPass@localhost:8889/blogz'
@@ -42,6 +38,11 @@ class User(db.Model):
 
 blogs = []
 
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'blog']
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        return redirect('/login')
 
 @app.route('/')
 def index():
@@ -89,7 +90,7 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             session['username'] = username
-            return redirect('/')
+            return redirect('/base')
 
 def good_username(username):
     username = request.form['username']
@@ -141,14 +142,14 @@ def validate_form():
         verify = ''
     if not username_error and not password_error and not verify_error:
             return redirect('/newpost')
-        else:
-            template = jinja_env.get_template('index.html')
-            return template.render(username_error=username_error, password_error=password_error, 
-                verify_error=verify_error, 
-                username = username,
-                password = '',
-                verify = '')
-                
+    else:
+        template = render_template('index.html')
+        return template.render(username_error=username_error, password_error=password_error, 
+            verify_error=verify_error, 
+            username = username,
+            password = '',
+            verify = '')
+
 @app.route('/login')
 def login():
     if request.method == 'POST':
