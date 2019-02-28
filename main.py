@@ -40,7 +40,7 @@ blogs = []
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'blog']
+    allowed_routes = ['login', 'blog', 'index', 'signup']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
@@ -59,23 +59,6 @@ def blog(blog_id):
 def add():
     return render_template('newpost.html')
 
-@app.route('/newpost', methods=['POST'])
-def add_new_post():
-    blogtitle = request.form["blogtitle"]
-    content = request.form["content"]
-
-    if not blogtitle or not content:
-        flash("All fields are required. Please try again.")
-        return redirect(url_for('/newpost.html'))
-    else:
-
-        post = Blog(blogtitle=blogtitle, content=content)
-
-        db.session.add(post)
-        db.session.commit()
-        
-        flash('New entry was successfully posted!')
-        return redirect('/')
 
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
@@ -91,6 +74,7 @@ def signup():
             db.session.commit()
             session['username'] = username
             return redirect('/base')
+    render_template('signup.html')
 
 def good_username(username):
     username = request.form['username']
@@ -170,10 +154,30 @@ def login():
                     return('/signup')
     return render_template('login.html')
 
+@app.route('/newpost', methods=['POST'])
+def add_new_post():
+    blogtitle = request.form["blogtitle"]
+    content = request.form["content"]
+
+    if not blogtitle or not content:
+        flash("All fields are required. Please try again.")
+        return redirect(url_for('/newpost.html'))
+    else:
+
+        post = Blog(blogtitle=blogtitle, content=content)
+
+        db.session.add(post)
+        db.session.commit()
+        
+        flash('New entry was successfully posted!')
+        return redirect('/')
+
 @app.route('/logout')
 def logout():
     del session['username']
     return redirect('/')
+
+
 
 if __name__ == '__main__':
     app.run()
