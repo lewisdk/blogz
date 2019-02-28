@@ -14,10 +14,23 @@ class Blog(db.Model):
     blogtitle = db.Column(db.String(50))
     content = db.Column(db.Text)
     completed = db.Column(db.Boolean)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __init__(self, blogtitle, content):
         self.blogtitle = blogtitle
         self.content = content
+        self.owner = owner 
+
+class User(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(15), unique=True)
+    password = db.Column(db.String(15))
+    blogs = db.relationship('Blog', backref='owner')
+
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password 
 
 
 blogs = []
@@ -55,6 +68,44 @@ def add_new_post():
         
         flash('New entry was successfully posted!')
         return redirect('/')
+
+@app.route('/signup', methods=['POST', 'GET'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+
+        existing_user = User.query.filter_by(username=username).first()
+        if not existing_user:
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['username'] = username
+            return redirect('/')
+
+
+@app.route('/login')
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            session['username'] = username
+            flash("logged in")
+            return redirect('/newpost')
+        else:
+            if user and user.password != password:
+                flash('User password incorrect', 'error')
+                return redirect('/login')
+            else:
+                if not username:
+                    flash('Username does not exist, please create an account.', 'error')
+                    return('/signup')
+    return render_template('login.html')
+
+#@app.route('/index')
 
 if __name__ == '__main__':
     app.run()
