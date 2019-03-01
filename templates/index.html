@@ -13,9 +13,7 @@
     <nav class="navbar">
             <div style='float: right'>
             <a href="{{ url_for('login')}}">Login</a> 
-                    {% if 'user' in session %}
-                      {{ session['user'] }}
-                    {% endif %}
+                
             <a href="{{ url_for('logout')}}">Logout</a>
         
     </nav>

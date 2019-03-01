@@ -52,9 +52,9 @@ def require_login():
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    
-    owner = User.query.filter_by(username=session['username']).first()
-    users = User.query.filter_by(owner=owner).all()
+
+    users = User.query.order_by(User.username.desc()).all()
+
     return render_template('index.html', users=users)
 
 
@@ -165,14 +165,19 @@ def validate_form():
             password = '',
             verify = '')
 
-@app.route('/blog')
-def blog_page():
-    blogs = request.args.get('blog')
-    users = request.args.get('user')
-    for blog in blogs:
-        return render_template('blog.html', blogs=blogs)
-    for user in users:
-        return render_template('singleUser.html', user=user)
+@app.route('/logout')
+def logout():
+    del session['username']
+    return redirect('/')
+
+#@app.route('/blog')
+#def blog_page():
+#    blogs = request.args.get('blog')
+#    users = request.args.get('user')
+#    for blog in blogs:
+#       return render_template('blog.html', blogs=blogs)
+#    for user in users:
+#        return render_template('singleUser.html', user=user)
 
 @app.route('/base')
 def all_blogs():
@@ -184,14 +189,14 @@ def blog(blog_id):
 
     return render_template('blog.html', blog=blog)
 
-@app.route('/singleUser/<int:user_id>')
-def singleUser(user_id):
-    user = User.query.filter_by(id=user_id).one()
-    blogs = Blog.query.all(user_id)
-    if user:
-        return render_template('singleUser.html')
-    if blogs:
-        return render_template('base.html')
+#@app.route('/singleUser/<int:user_id>')
+#def singleUser(user_id):
+#   user = User.query.filter_by(id=user_id).one()
+#    blogs = Blog.query.all(user_id)
+#    if user:
+#        return render_template('singleUser.html')
+#    if blogs:
+#        return render_template('base.html')
 
 @app.route('/')
 def show_all_users():
@@ -221,10 +226,6 @@ def add_new_post():
         flash('New entry was successfully posted!')
         return redirect('/blog')
 
-@app.route('/logout')
-def logout():
-    del session['username']
-    return redirect('/')
 
 
 
