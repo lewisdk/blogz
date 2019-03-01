@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, request, redirect, render_template, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import cgi
@@ -19,8 +20,9 @@ class Blog(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     blogtitle = db.Column(db.String(50))
-    content = db.Column(db.Text)
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __init__(self, blogtitle, content, owner):
         self.blogtitle = blogtitle
@@ -28,21 +30,21 @@ class Blog(db.Model):
         self.owner = owner
 
     def __repr__(self):
-        return f"Blog('{self.blogtitle}', '{self.content}', '{self.owner}')"
+        return f"Blog('{self.blogtitle}', '{self.date_posted}'', {self.content}', '{self.owner}')"
 
 class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), unique=True, nullable=False)
-    password = db.Column(db.String(15))
-    blogs = db.relationship('Blog', backref='owner')
+    password = db.Column(db.String(15), nullable=False)
+    blogs = db.relationship('Blog', backref='owner', lazy=True)
 
     def __init__(self, username, password):
         self.username = username
         self.password = password 
     
     def __repr__(self):
-        return f""User('{self.username}')"
+        return f"User('{self.username}')"
 
 
 blogs = []
@@ -187,19 +189,17 @@ def blog_page():
 def all_blogs():
     return render_template('base.html')
 
-@app.route('/blog/<int:blog_id>')
-def blog(blog_id):
-    blog = Blog.query.filter_by(id=blog_id).one()
+#@app.route('/blog/<int:blog_id>')
+#def blog(blog_id):
+#    blog = Blog.query.filter_by(id=blog_id).one()
 
-    return render_template('blog.html', blog=blog)
+#    return render_template('blog.html', blog=blog)
 
-@app.route('/blog/<?user=userId>')
-def userId(user_id):
-
-   user = User.query.filter_by(id=user_id).one()
-
-    if <user>:
-        return render_template('singleUser.html')
+#@app.route('/blog/<?user=userId>')
+#def userId(user_id):
+#    user = User.query.filter_by(id=user_id).one()
+ #   if user:
+ #       return render_template('singleUser.html')
 
 
 @app.route('/')

@@ -13,28 +13,11 @@
     <nav class="navbar">
             <div style='float: right'>
             <a href="{{ url_for('login')}}">Login</a> 
-                
+                    {% if 'user' in session %}
+                      {{ session['user'] }}
+                    {% endif %}
             <a href="{{ url_for('logout')}}">Logout</a>
         
     </nav>
 
-   
-{% block content %}
-
-<h1>Users</h1>
-
-{% if users|length == 0 %}
-<p>No Users yet</p>
-{% else %}
-
-    {% for user in users %}
-
-    <a href="{{ url_for('show_all_users') }}">
-                <h2 class="user-username">
-                  {{ User.username }}</h2></a>
-    {% endfor %}
-    </ul>
-
-{% endif %}
-
-{% endblock %}
+ 
