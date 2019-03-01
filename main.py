@@ -21,7 +21,10 @@ class Blog(db.Model):
     def __init__(self, blogtitle, content, owner):
         self.blogtitle = blogtitle
         self.content = content
-        self.owner= owner
+        self.owner = owner
+
+    def __repr__(self):
+        return '<Blog %r>' % self.blogtitle
 
 class User(db.Model):
 
@@ -33,15 +36,19 @@ class User(db.Model):
     def __init__(self, username, password):
         self.username = username
         self.password = password 
+    
+    def __repr__(self):
+        return '<User %r>' % self.username
 
 
 blogs = []
 users = []
 
-@app.route('/')
+@app.route('/', methods=['POST', 'GET'])
 def index():
+    
     users = User.query.all()
-    return render_template('index.html')
+    return render_template('index.html', users=users)
 
 @app.before_request
 def require_login():
@@ -55,6 +62,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
+        print(user)
         if user and user.password == password:
             session['username'] = username
             flash("Logged in")
@@ -111,8 +119,15 @@ def blog(blog_id):
 def singleUser(user_id):
     user = User.query.filter_by(id=user_id).one()
     blogs = Blog.query.all(user_id)
+    if user:
+        return render_template('singleUser.html')
+    if blogs:
+        return render_template('base.html')
 
-    return render_template('singleUser.html', user=user)
+@app.route('/')
+def show_all_users():
+    user = User.query.all()
+    return user
 
 @app.route('/add')
 def add():
@@ -123,12 +138,12 @@ def add():
 def add_new_post():
     blogtitle = request.form["blogtitle"]
     content = request.form["content"]
-
+    owner = User.query.filter_by(username=session['username']).first()
+    
     if not blogtitle or not content:
         flash("All fields are required. Please try again.")
         return redirect(url_for('/newpost.html'))
     else:
-
         post = Blog(blogtitle=blogtitle, content=content, owner=owner)
 
         db.session.add(post)

@@ -29,12 +29,11 @@
 <p>No Users yet</p>
 {% else %}
 
-    <ul>
-          <ul>
-    {% for singleUser in singleUsers %}
-        <a href="{{ url_for('user', user_id=user.id) }}">
+    {% for user in users %}
+
+    <a href="{{ url_for('show_all_users') }}">
                 <h2 class="user-username">
-                  {{ user.username }}</h2></a>
+                  {{ User.username }}</h2></a>
     {% endfor %}
     </ul>
 
