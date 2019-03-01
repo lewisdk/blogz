@@ -44,17 +44,19 @@ class User(db.Model):
 blogs = []
 users = []
 
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'base', 'index', 'signup']
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        return redirect('/login')
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     
-    users = User.query.all()
+    owner = User.query.filter_by(username=session['username']).first()
+    users = User.query.filter_by(owner=owner).all()
     return render_template('index.html', users=users)
 
-@app.before_request
-def require_login():
-    allowed_routes = ['login', 'blog', 'index', 'signup']
-    if request.endpoint not in allowed_routes and 'username' not in session:
-        return redirect('/login')
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -136,12 +138,10 @@ def validate_form():
     username = request.form['username']
     password = request.form['password']
     verify = request.form['verify']
-    email = request.form['email']
 
     username_error = ''
     password_error = ''
     verify_error = ''
-    email_error=''
 
     if good_username(username) == False:
         username_error = 'That is not a valid username.'
@@ -155,20 +155,15 @@ def validate_form():
         verify_error = 'Passwords do not match.'
         verify = ''
 
-    if good_email(email) == False:
-        email_error = 'That is not a valid email address.'
-        email = ''
-
     if not username_error and not password_error and not verify_error and not email_error:
-        return redirect('/welcome?username=' + username)
+        return redirect('/')
     else:
-        template = jinja_env.get_template('index.html')
+        template = jinja_env.get_template('signup.html')
         return template.render(username_error=username_error, password_error=password_error, 
-            verify_error=verify_error, email_error=email_error,
+            verify_error=verify_error,
             username = username,
             password = '',
-            verify = '',
-            email = email)
+            verify = '')
 
 @app.route('/blog')
 def blog_page():
