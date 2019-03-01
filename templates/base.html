@@ -1,22 +1,6 @@
-<!doctype html>
-<html>
-    <head>
-        <title>{{title}}</title>
-    </head>
-<body>
-    <nav class="navbar">
-    <a href="{{ url_for('index') }}">Home</a>
-    <a href="{{ url_for('add') }}">Add New Blog</a>
-    </nav>
+{% extends "index.html" %}
 
-    <nav class="navbar">
-            <align="right">
-            <a href="{{ url_for('login')"></a>
-            <a href="{{ url_for('/logout')"></a>
-        
-    </nav>
-
-    {% block content %}
+{% block content %}
 
     <h1>Blog Entries</h1>
    

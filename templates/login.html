@@ -1,20 +1,23 @@
-{% extends "base.html" %}
+{% extends "index.html" %}
 
-{ % block content % }
-
-<form action="/login">
+{% block content %}
+</br>
+</br>
+<form action="/login" method="POST">
   
     <div class="container">
       <label for="username"><b>Username</b></label>
+    </br>
       <input type="text" placeholder="Enter Username" name="username" required>
-  
+</br>
       <label for="password"><b>Password</b></label>
+</br>
       <input type="password" placeholder="Enter Password" name="password" required>
-  
+</br>  
       <button type="submit">Login</button>
 
     </div>
   
   </form>
 
-  { % endblock % }
+  {% endblock %}

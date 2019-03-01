@@ -1,6 +1,6 @@
-{ % extends "base.html" % }
+{% extends "index.html" %}
 
-{ % block content % }
+{% block content %}
 
 <!DOCTYPE html>
 <html>
@@ -11,7 +11,7 @@
 </head>
 
 <h1>Signup</h1>
-<form action= "/" method = "post">
+<form action="/signup" method ="post">
 
     <label for="username">Username:</label>
     <input id="username" type="text" name="username" value="{{username}}"/>
@@ -30,5 +30,5 @@
 </body>
 </html>
 
-  { % endblock % }
+  {% endblock %}
   

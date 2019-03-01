@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, url_for, flash
+from flask import Flask, request, redirect, render_template, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import cgi
 import os
@@ -16,13 +16,12 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     blogtitle = db.Column(db.String(50))
     content = db.Column(db.Text)
-    completed = db.Column(db.Boolean)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, blogtitle, content):
+    def __init__(self, blogtitle, content, owner):
         self.blogtitle = blogtitle
         self.content = content
-        self.owner = owner 
+        self.owner= owner
 
 class User(db.Model):
 
@@ -37,6 +36,12 @@ class User(db.Model):
 
 
 blogs = []
+users = []
+
+@app.route('/')
+def index():
+    users = User.query.all()
+    return render_template('index.html')
 
 @app.before_request
 def require_login():
@@ -44,10 +49,110 @@ def require_login():
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        existing_user = User.query.filter_by(username=username).first()
+        if not existing_user:
+            flash('User does not exist.')
+            return redirect('/signup')
+        else:
+            if username == existing_user and user.password == password:
+                session['username'] = username
+                flash("Logged in")
+                return redirect('/newpost')
+            else:
+                flash('Username or password incorrect', 'error')
+                return redirect('/login')
+            
+    return render_template('login.html')
+
+@app.route('/signup', methods=['POST', 'GET'])
+def signup():
+    if request.method == 'POST': 
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+        existing_user = User.query.filter_by(username=username).first()  
+        def good_username(username):
+            username = request.form['username']
+
+            if (len(username) > 3 and len(username) < 15):
+                return True
+            else:
+                return False
+
+        def good_password(password):
+            password = request.form['password']
+
+            if (len(password) > 3 and len(password) < 15):
+                if (" ") in password:
+                    return True
+            else:
+                return False 
+
+        def password_match(verify):
+            verify = request.form['verify']
+            password = request.form['password']
+
+            if [password] == [verify]:
+                return True
+            else:
+                return False
+        
+        if not existing_user:
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['username'] = username
+            return redirect('/newpost')
+
+    def validate_form():
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+
+        username_error = ''
+        password_error = ''
+        verify_error = ''
+
+        if good_username(username) == False:
+            username_error = 'That is not a valid username.'
+            username = ''
+
+        if good_password(password) == False:
+            password_error = 'That is not a valid password.'
+            password = ''
+
+        if password_match(verify) == False:
+            verify_error = 'Passwords do not match.'
+            verify = ''
+        if not username_error and not password_error and not verify_error:
+            return redirect('/newpost')
+        else:
+            template = render_template('index.html')
+            return template.render(username_error=username_error, password_error=password_error, 
+                verify_error=verify_error, 
+                username = username,
+                password = '',
+                verify = '')
+
+    return render_template('signup.html')
+
 @app.route('/blog')
 def blog_page():
-    blogs = Blog.query.all()
-    return render_template('', blogs=blogs)
+    blogs = request.args.get('blog')
+    users = request.args.get('user')
+    for blog in blogs:
+        return render_template('blog.html', blogs=blogs)
+    for user in users:
+        return render_template('singleUser.html', user=user)
+
+@app.route('/base')
+def all_blogs():
+    return render_template('base.html')
 
 @app.route('/blog/<int:blog_id>')
 def blog(blog_id):
@@ -55,104 +160,17 @@ def blog(blog_id):
 
     return render_template('blog.html', blog=blog)
 
+@app.route('/singleUser/<int:user_id>')
+def singleUser(user_id):
+    user = User.query.filter_by(id=user_id).one()
+    blogs = Blog.query.all(user_id)
+
+    return render_template('singleUser.html', user=user)
+
 @app.route('/add')
 def add():
     return render_template('newpost.html')
 
-
-@app.route('/signup', methods=['POST', 'GET'])
-def signup():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        verify = request.form['verify']
-
-        existing_user = User.query.filter_by(username=username).first()
-        if not existing_user:
-            new_user = User(username, password)
-            db.session.add(new_user)
-            db.session.commit()
-            session['username'] = username
-            return redirect('/blog')
-    render_template('signup.html')
-
-def good_username(username):
-    username = request.form['username']
-
-    if (len(username) > 3 and len(username) < 15):
-        return True
-    else:
-        return False
-
-def good_password(password):
-    password = request.form['password']
-
-    if (len(password) > 3 and len(password) < 15):
-        if (" ") in password:
-            return True
-    else:
-        return False 
-
-def password_match(verify):
-    verify = request.form['verify']
-    password = request.form['password']
-
-    if [password] == [verify]:
-        return True
-    else:
-        return False
-
-@app.route("/", methods=['POST'])
-def validate_form():
-    username = request.form['username']
-    password = request.form['password']
-    verify = request.form['verify']
-
-    username_error = ''
-    password_error = ''
-    verify_error = ''
-    email_error=''
-
-    if good_username(username) == False:
-        username_error = 'That is not a valid username.'
-        username = ''
-
-    if good_password(password) == False:
-        password_error = 'That is not a valid password.'
-        password = ''
-
-    if password_match(verify) == False:
-        verify_error = 'Passwords do not match.'
-        verify = ''
-    if not username_error and not password_error and not verify_error:
-            return redirect('/newpost')
-    else:
-        template = render_template('index.html')
-        return template.render(username_error=username_error, password_error=password_error, 
-            verify_error=verify_error, 
-            username = username,
-            password = '',
-            verify = '')
-
-@app.route('/login')
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and user.password == password:
-            session['username'] = username
-            flash("logged in")
-            return redirect('/newpost')
-        else:
-            if user and user.password != password:
-                flash('User password incorrect', 'error')
-                return redirect('/login')
-            else:
-                if not username:
-                    flash('Username does not exist, please create an account.', 'error')
-                    return('/signup')
-    return render_template('login.html')
 
 @app.route('/newpost', methods=['POST'])
 def add_new_post():
@@ -164,13 +182,13 @@ def add_new_post():
         return redirect(url_for('/newpost.html'))
     else:
 
-        post = Blog(blogtitle=blogtitle, content=content)
+        post = Blog(blogtitle=blogtitle, content=content, owner=owner)
 
         db.session.add(post)
         db.session.commit()
         
         flash('New entry was successfully posted!')
-        return redirect('/')
+        return redirect('/blog')
 
 @app.route('/logout')
 def logout():
