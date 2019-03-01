@@ -11,6 +11,10 @@ app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 app.secret_key = "super secret key"
 
+tags = db.Table('tags',
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True),
+    db.Column('page_id', db.Integer, db.ForeignKey('page.id'), primary_key=True)
+)
 class Blog(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
@@ -24,12 +28,12 @@ class Blog(db.Model):
         self.owner = owner
 
     def __repr__(self):
-        return '<Blog %r>' % self.blogtitle
+        return f"Blog('{self.blogtitle}', '{self.content}', '{self.owner}')"
 
 class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(15), unique=True)
+    username = db.Column(db.String(15), unique=True, nullable=False)
     password = db.Column(db.String(15))
     blogs = db.relationship('Blog', backref='owner')
 
@@ -38,7 +42,7 @@ class User(db.Model):
         self.password = password 
     
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f""User('{self.username}')"
 
 
 blogs = []
@@ -76,7 +80,7 @@ def login():
                 flash('Password is incorrect', 'error')
                 return redirect('/login')
             
-    return render_template('login.html')
+    return render_template('login.html', title='login')
 
 
 @app.route('/signup', methods=['POST', 'GET'])
@@ -170,14 +174,14 @@ def logout():
     del session['username']
     return redirect('/')
 
-#@app.route('/blog')
-#def blog_page():
-#    blogs = request.args.get('blog')
-#    users = request.args.get('user')
-#    for blog in blogs:
-#       return render_template('blog.html', blogs=blogs)
-#    for user in users:
-#        return render_template('singleUser.html', user=user)
+@app.route('/blog')
+def blog_page():
+    blogs = request.args.get('blog')
+    users = request.args.get('user')
+    for blog in blogs:
+       return render_template('blog.html', blogs=blogs)
+    for user in users:
+        return render_template('singleUser.html', user=user)
 
 @app.route('/base')
 def all_blogs():
@@ -189,14 +193,14 @@ def blog(blog_id):
 
     return render_template('blog.html', blog=blog)
 
-#@app.route('/singleUser/<int:user_id>')
-#def singleUser(user_id):
-#   user = User.query.filter_by(id=user_id).one()
-#    blogs = Blog.query.all(user_id)
-#    if user:
-#        return render_template('singleUser.html')
-#    if blogs:
-#        return render_template('base.html')
+@app.route('/blog/<?user=userId>')
+def userId(user_id):
+
+   user = User.query.filter_by(id=user_id).one()
+
+    if <user>:
+        return render_template('singleUser.html')
+
 
 @app.route('/')
 def show_all_users():
