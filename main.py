@@ -54,91 +54,38 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        existing_user = User.query.filter_by(username=username).first()
-        if not existing_user:
-            flash('User does not exist.')
-            return redirect('/signup')
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            session['username'] = username
+            flash("Logged in")
+            return redirect('/')
         else:
-            if username == existing_user and user.password == password:
-                session['username'] = username
-                flash("Logged in")
-                return redirect('/newpost')
+            if not user:
+                flash('User does not exist', 'error')
+                return redirect('/signup')
             else:
-                flash('Username or password incorrect', 'error')
+                flash('Password is incorrect', 'error')
                 return redirect('/login')
             
     return render_template('login.html')
 
+
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
-    if request.method == 'POST': 
+    if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
-        existing_user = User.query.filter_by(username=username).first()  
-        def good_username(username):
-            username = request.form['username']
 
-            if (len(username) > 3 and len(username) < 15):
-                return True
-            else:
-                return False
-
-        def good_password(password):
-            password = request.form['password']
-
-            if (len(password) > 3 and len(password) < 15):
-                if (" ") in password:
-                    return True
-            else:
-                return False 
-
-        def password_match(verify):
-            verify = request.form['verify']
-            password = request.form['password']
-
-            if [password] == [verify]:
-                return True
-            else:
-                return False
-        
+        existing_user = User.query.filter_by(username=username).first()
         if not existing_user:
             new_user = User(username, password)
             db.session.add(new_user)
             db.session.commit()
             session['username'] = username
-            return redirect('/newpost')
-
-    def validate_form():
-        username = request.form['username']
-        password = request.form['password']
-        verify = request.form['verify']
-
-        username_error = ''
-        password_error = ''
-        verify_error = ''
-
-        if good_username(username) == False:
-            username_error = 'That is not a valid username.'
-            username = ''
-
-        if good_password(password) == False:
-            password_error = 'That is not a valid password.'
-            password = ''
-
-        if password_match(verify) == False:
-            verify_error = 'Passwords do not match.'
-            verify = ''
-        if not username_error and not password_error and not verify_error:
-            return redirect('/newpost')
+            return redirect('/')
         else:
-            template = render_template('index.html')
-            return template.render(username_error=username_error, password_error=password_error, 
-                verify_error=verify_error, 
-                username = username,
-                password = '',
-                verify = '')
-
+            return "<h1>Duplicate user</h1>"
     return render_template('signup.html')
 
 @app.route('/blog')
