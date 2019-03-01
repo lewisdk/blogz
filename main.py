@@ -216,13 +216,13 @@ def add():
 def add_new_post():
     blogtitle = request.form["blogtitle"]
     content = request.form["content"]
-    owner = User.query.filter_by(username=session['username']).first()
+    user_id=user.id
 
     if not blogtitle or not content:
         flash("All fields are required. Please try again.")
         return redirect(url_for('/newpost.html'))
     else:
-        post = Blog(blogtitle=blogtitle, content=content, owner=owner)
+        post = Blog(blogtitle=blogtitle, content=content, user_id=user.id)
 
         db.session.add(post)
         db.session.commit()

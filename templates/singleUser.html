@@ -9,12 +9,13 @@
 {% else %}
 
     <ul>
-    {% for blog in blogs%}
+    {% for blog in user.blogs%}
         <a href="{{ url_for('blog', blog_id=blog.id) }}">
                 <h2 class="blog-blogtitle">
                   {{ blog.blogtitle }}</h2></a>
+                </br>
                 <h3 class="blog-content">
-                    {{ blog.content|safe}}
+                    {{ blog.content|safe }}
                 </h3>
                   
     {% endfor %}
