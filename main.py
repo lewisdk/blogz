@@ -62,7 +62,6 @@ def login():
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        print(user)
         if user and user.password == password:
             session['username'] = username
             flash("Logged in")
@@ -94,7 +93,82 @@ def signup():
             return redirect('/')
         else:
             return "<h1>Duplicate user</h1>"
-    return render_template('signup.html')
+    return render_template('signup.html')      
+
+def good_username(username):
+    username = request.form['username']
+
+    if (len(username) > 3 and len(username) < 20):
+        return True
+    else:
+        return False
+
+def good_password(password):
+    password = request.form['password']
+
+    if (len(password) > 3 and len(password) < 20):
+        if (" ") in password:
+            return True
+    else:
+        return False 
+
+def password_match(verify):
+    verify = request.form['verify']
+    password = request.form['password']
+
+    if [password] == [verify]:
+        return True
+    else:
+        return False
+
+def good_email(email):
+
+    email = request.form['email']
+    if email != '':
+        if ("[^@]+@[^@]+.[^@]+"):
+            return True
+        else:
+            return False
+
+
+@app.route("/signup", methods=['POST'])
+def validate_form():
+    username = request.form['username']
+    password = request.form['password']
+    verify = request.form['verify']
+    email = request.form['email']
+
+    username_error = ''
+    password_error = ''
+    verify_error = ''
+    email_error=''
+
+    if good_username(username) == False:
+        username_error = 'That is not a valid username.'
+        username = ''
+
+    if good_password(password) == False:
+        password_error = 'That is not a valid password.'
+        password = ''
+
+    if password_match(verify) == False:
+        verify_error = 'Passwords do not match.'
+        verify = ''
+
+    if good_email(email) == False:
+        email_error = 'That is not a valid email address.'
+        email = ''
+
+    if not username_error and not password_error and not verify_error and not email_error:
+        return redirect('/welcome?username=' + username)
+    else:
+        template = jinja_env.get_template('index.html')
+        return template.render(username_error=username_error, password_error=password_error, 
+            verify_error=verify_error, email_error=email_error,
+            username = username,
+            password = '',
+            verify = '',
+            email = email)
 
 @app.route('/blog')
 def blog_page():
@@ -139,7 +213,7 @@ def add_new_post():
     blogtitle = request.form["blogtitle"]
     content = request.form["content"]
     owner = User.query.filter_by(username=session['username']).first()
-    
+
     if not blogtitle or not content:
         flash("All fields are required. Please try again.")
         return redirect(url_for('/newpost.html'))
