@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Flask, request, redirect, render_template, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+from flask_login import current_user
 import cgi
 import os
 import jinja2
@@ -69,6 +70,8 @@ def index():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
+    if current_user.is_authenticated:
+        return redirect('/')
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -90,6 +93,8 @@ def login():
 @app.route('/signup', methods=['POST', 'GET'])
 
 def signup():
+    if current_user.is_authenticated:
+        return redirect('/')
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -126,7 +131,9 @@ def signup():
                 return False
 
         if existing_user:
-            return ("Username exists. Try harder.")
+            username_error = "Username exists. Try harder."
+            return render_template('signup.html', username_error=username_error)
+            
 
         if good_username(username) == False:
             username_error = 'That is not a valid username.'            
