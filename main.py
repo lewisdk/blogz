@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import Flask, request, redirect, render_template, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 import cgi
 import os
 import jinja2
@@ -11,6 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:MyNewPass@localho
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 app.secret_key = "super secret key"
+bcrypt = Bcrypt(app)
 
 blogs = db.Table('blogs',
     db.Column('blog_id', db.Integer, db.ForeignKey('blog.id'), primary_key=True),
@@ -59,9 +61,10 @@ def require_login():
 @app.route('/', methods=['POST', 'GET'])
 def index():
 
+    user = User.query.filter_by(id=User.username).first()
     users = User.query.order_by(User.username.desc()).all()
 
-    return render_template('index.html', users=users)
+    return render_template('index.html', user=user, users=users)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -82,94 +85,70 @@ def login():
                 flash('Password is incorrect', 'error')
                 return redirect('/login')
             
-    return render_template('login.html', title='login')
-
+    return render_template('login.html', title='login')     
 
 @app.route('/signup', methods=['POST', 'GET'])
+
 def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
-
         existing_user = User.query.filter_by(username=username).first()
-        if not existing_user:
-            new_user = User(username, password)
-            db.session.add(new_user)
+        username_error = ''
+        password_error = ''
+        verify_error = ''
+
+        def good_username(username):
+            username = request.form['username']
+
+            if (len(username) > 3 and len(username) < 20):
+                return True
+            else:
+                return False
+
+        def good_password(password):
+            password = request.form['password']
+
+            if (len(password) > 3 and len(password) < 20):
+                if (" ") in password:
+                    return True
+            else:
+                return False 
+
+        def password_match(verify):
+            verify = request.form['verify']
+            password = request.form['password']
+
+            if [password] == [verify]:
+                return True
+            else:
+                return False
+
+        if existing_user:
+            return ("Username exists. Try harder.")
+
+        if good_username(username) == False:
+            username_error = 'That is not a valid username.'            
+            return render_template('signup.html', username_error=username_error, username = '')    
+
+        if good_password(password) == False:
+            password_error = 'That is not a valid password.'
+            return render_template('signup.html', password_error=password_error, password = '')
+
+        if password_match(verify) == False:
+            verify_error = 'Passwords do not match.'
+            return render_template('signup.html', verify_error=verify_error, verify = '')
+
+        else:
+            user = User(username=username, password=password)
+            db.session.add(user)
             db.session.commit()
             session['username'] = username
-            return redirect('/')
-        else:
-            return "<h1>Duplicate user</h1>"
-    return render_template('signup.html')      
-
-def good_username(username):
-    username = request.form['username']
-
-    if (len(username) > 3 and len(username) < 20):
-        return True
-    else:
-        return False
-
-def good_password(password):
-    password = request.form['password']
-
-    if (len(password) > 3 and len(password) < 20):
-        if (" ") in password:
-            return True
-    else:
-        return False 
-
-def password_match(verify):
-    verify = request.form['verify']
-    password = request.form['password']
-
-    if [password] == [verify]:
-        return True
-    else:
-        return False
-
-def good_email(email):
-
-    email = request.form['email']
-    if email != '':
-        if ("[^@]+@[^@]+.[^@]+"):
-            return True
-        else:
-            return False
-
-
-@app.route("/signup", methods=['POST'])
-def validate_form():
-    username = request.form['username']
-    password = request.form['password']
-    verify = request.form['verify']
-
-    username_error = ''
-    password_error = ''
-    verify_error = ''
-
-    if good_username(username) == False:
-        username_error = 'That is not a valid username.'
-        username = ''
-
-    if good_password(password) == False:
-        password_error = 'That is not a valid password.'
-        password = ''
-
-    if password_match(verify) == False:
-        verify_error = 'Passwords do not match.'
-        verify = ''
-
-    if not username_error and not password_error and not verify_error and not email_error:
-        return redirect('/')
-    else:
-        template = jinja_env.get_template('signup.html')
-        return template.render(username_error=username_error, password_error=password_error, 
-            verify_error=verify_error,
-            username = username,
-            password = '',
-            verify = '')
+            flash('Your account has been created. You are now able to log in.')
+            return redirect('login')
+                
+    return render_template('signup.html')   
 
 @app.route('/logout')
 def logout():
