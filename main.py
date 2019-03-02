@@ -78,7 +78,6 @@ def require_login():
 @app.route('/', methods=['POST', 'GET'])
 def index():
     users = User.query.order_by(User.username.desc()).all()
-    owner = User.query.filter_by(username=session['username']).first()
 
     return render_template('index.html', users=users)
 
@@ -95,7 +94,7 @@ def login():
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
         if user and user.password == password:
-            login_user(user)
+            session['username'] = username
             flash("Logged in")
             return redirect('/')
         else:
@@ -224,7 +223,7 @@ def add():
 def add_new_post():
     blogtitle = request.form["blogtitle"]
     content = request.form["content"]
-    owner = session['user']
+    owner = session['username']
     if not blogtitle or not content:
         flash("All fields are required. Please try again.")
         return redirect(url_for('/newpost.html'))
