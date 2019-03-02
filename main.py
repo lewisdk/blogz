@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import Flask, request, redirect, render_template, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from flask_login import current_user
+from flask_login import current_user, LoginManager, login_user, logout_user
 import cgi
 import os
 import jinja2
@@ -14,6 +14,11 @@ app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 app.secret_key = "super secret key"
 bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 blogs = db.Table('blogs',
     db.Column('blog_id', db.Integer, db.ForeignKey('blog.id'), primary_key=True),
@@ -48,6 +53,16 @@ class User(db.Model):
     
     def __repr__(self):
         return f"User('{self.username}')"
+    
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return self.id
+
 
 
 blogs = []
@@ -55,29 +70,32 @@ users = []
 
 @app.before_request
 def require_login():
+
     allowed_routes = ['login', 'base', 'index', 'signup']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-
-    user = User.query.filter_by(id=User.username).first()
     users = User.query.order_by(User.username.desc()).all()
+    owner = User.query.filter_by(username=session['username']).first()
 
-    return render_template('index.html', user=user, users=users)
+    return render_template('index.html', users=users)
 
+def logged_in_user():
+    owner = User.query.filter_by(username=session['user']).first()
+    return owner
+
+endpoints_without_login = ['login', 'register']
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    if current_user.is_authenticated:
-        return redirect('/')
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
         if user and user.password == password:
-            session['username'] = username
+            login_user(user)
             flash("Logged in")
             return redirect('/')
         else:
@@ -91,7 +109,6 @@ def login():
     return render_template('login.html', title='login')     
 
 @app.route('/signup', methods=['POST', 'GET'])
-
 def signup():
     if current_user.is_authenticated:
         return redirect('/')
@@ -162,6 +179,12 @@ def logout():
     del session['username']
     return redirect('/')
 
+@app.route('/singleUser')
+def singleUser():
+    user = User.query.filter_by(id=User.username).first()
+    
+    return render_template('singleUser.html', title='singleUser', user=user)
+
 @app.route('/blog')
 def blog_page():
     blogs = request.args.get('blog')
@@ -178,7 +201,7 @@ def all_blogs():
 #@app.route('/blog/<int:blog_id>')
 #def blog(blog_id):
 #    blog = Blog.query.filter_by(id=blog_id).one()
-
+#     eturn Blog.query.filter_by(owner_id=current_user_id).all()
 #    return render_template('blog.html', blog=blog)
 
 #@app.route('/blog/<?user=userId>')
@@ -197,24 +220,23 @@ def show_all_users():
 def add():
     return render_template('newpost.html')
 
-
-@app.route('/newpost', methods=['POST'])
+@app.route('/newpost', methods=['POST', 'GET'])
 def add_new_post():
     blogtitle = request.form["blogtitle"]
     content = request.form["content"]
-    user_id=user.id
-
+    owner = session['user']
     if not blogtitle or not content:
         flash("All fields are required. Please try again.")
         return redirect(url_for('/newpost.html'))
     else:
-        post = Blog(blogtitle=blogtitle, content=content, user_id=user.id)
+        post = Blog(blogtitle=blogtitle, content=content, owner=owner)
 
         db.session.add(post)
         db.session.commit()
         
         flash('New entry was successfully posted!')
         return redirect('/blog')
+    return render_template('newpost.html')
 
 
 

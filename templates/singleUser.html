@@ -9,8 +9,8 @@
 {% else %}
 
     <ul>
-    {% for blog in user.blogs%}
-        <a href="{{ url_for('blog', blog_id=blog.id) }}">
+    {% for blog in user.blogs %}
+        <a href="{{ url_for('blog', blog_id==owner) }}">
                 <h2 class="blog-blogtitle">
                   {{ blog.blogtitle }}</h2></a>
                 </br>
