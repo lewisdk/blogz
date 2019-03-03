@@ -207,36 +207,23 @@ def singleUser():
     
     return render_template('singleUser.html', title='singleUser', user=user)
 
-@app.route('/blog')
-def blog_page():
-    blogs = request.args.get('blog')
-    
-    for blog in blogs:
-       return render_template('blog.html', blogs=blogs)
+@app.route('/blog/<int:blog_id>')
+def blog(blog_id):
+    blog = Blog.query.filter_by(id=blog_id).one()
+
+    return render_template('blog.html', blog=blog)
     
 
-@app.route('/blog/<?user=userId')
-def blog_users():
+@app.route('/blog/<int:user_id>')
+def blog_owner(user_id):
     user = request.args.get('user')
 
-    for user in users:
-        return render_template('singleUser.html', user=user)
+    return render_template('singleUser.html', user=user)
 
 @app.route('/base')
 def all_blogs():
     return render_template('base.html')
 
-#@app.route('/blog/<int:blog_id>')
-#def blog(blog_id):
-#    blog = Blog.query.filter_by(id=blog_id).one()
-#    return Blog.query.filter_by(owner_id=current_user_id).all()
-#    return render_template('blog.html', blog=blog)
-
-#@app.route('/blog/<?user=userId>')
-#def userId(user_id):
-#    user = User.query.filter_by(id=user_id).one()
-#    if user:
-#        return render_template('singleUser.html')
 
 @app.route('/logout')
 def logout():
