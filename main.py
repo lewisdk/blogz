@@ -30,7 +30,7 @@ class Blog(db.Model):
     blogtitle = db.Column(db.String(50))
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __init__(self, blogtitle, content, owner):
         self.blogtitle = blogtitle
@@ -71,7 +71,7 @@ users = []
 @app.before_request
 def require_login():
 
-    allowed_routes = ['login', 'base', 'index', 'signup']
+    allowed_routes = ['login', 'all_blogs', 'index', 'signup', 'singleUser,' 'blog_page']
     if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
@@ -81,11 +81,17 @@ def index():
 
     return render_template('index.html', users=users)
 
+
+
+@app.route('/')
+def show_all_users():
+    user = User.query.all()
+    return user
+
 def logged_in_user():
     owner = User.query.filter_by(username=session['user']).first()
     return owner
 
-endpoints_without_login = ['login', 'register']
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -173,48 +179,6 @@ def signup():
                 
     return render_template('signup.html')   
 
-@app.route('/logout')
-def logout():
-    del session['username']
-    return redirect('/')
-
-@app.route('/singleUser')
-def singleUser():
-    user = User.query.filter_by(id=User.username).first()
-    
-    return render_template('singleUser.html', title='singleUser', user=user)
-
-@app.route('/blog')
-def blog_page():
-    blogs = request.args.get('blog')
-    users = request.args.get('user')
-    for blog in blogs:
-       return render_template('blog.html', blogs=blogs)
-    for user in users:
-        return render_template('singleUser.html', user=user)
-
-@app.route('/base')
-def all_blogs():
-    return render_template('base.html')
-
-#@app.route('/blog/<int:blog_id>')
-#def blog(blog_id):
-#    blog = Blog.query.filter_by(id=blog_id).one()
-#     eturn Blog.query.filter_by(owner_id=current_user_id).all()
-#    return render_template('blog.html', blog=blog)
-
-#@app.route('/blog/<?user=userId>')
-#def userId(user_id):
-#    user = User.query.filter_by(id=user_id).one()
- #   if user:
- #       return render_template('singleUser.html')
-
-
-@app.route('/')
-def show_all_users():
-    user = User.query.all()
-    return user
-
 @app.route('/add')
 def add():
     return render_template('newpost.html')
@@ -223,7 +187,7 @@ def add():
 def add_new_post():
     blogtitle = request.form["blogtitle"]
     content = request.form["content"]
-    owner = session['username']
+    owner = User.query.filter_by(username=session["username"]).first()
     if not blogtitle or not content:
         flash("All fields are required. Please try again.")
         return redirect(url_for('/newpost.html'))
@@ -237,6 +201,47 @@ def add_new_post():
         return redirect('/blog')
     return render_template('newpost.html')
 
+@app.route('/singleUser')
+def singleUser():
+    user = User.query.filter_by(id=User.username).first()
+    
+    return render_template('singleUser.html', title='singleUser', user=user)
+
+@app.route('/blog')
+def blog_page():
+    blogs = request.args.get('blog')
+    
+    for blog in blogs:
+       return render_template('blog.html', blogs=blogs)
+    
+
+@app.route('/blog/<?user=userId')
+def blog_users():
+    user = request.args.get('user')
+
+    for user in users:
+        return render_template('singleUser.html', user=user)
+
+@app.route('/base')
+def all_blogs():
+    return render_template('base.html')
+
+#@app.route('/blog/<int:blog_id>')
+#def blog(blog_id):
+#    blog = Blog.query.filter_by(id=blog_id).one()
+#    return Blog.query.filter_by(owner_id=current_user_id).all()
+#    return render_template('blog.html', blog=blog)
+
+#@app.route('/blog/<?user=userId>')
+#def userId(user_id):
+#    user = User.query.filter_by(id=user_id).one()
+#    if user:
+#        return render_template('singleUser.html')
+
+@app.route('/logout')
+def logout():
+    del session['username']
+    return redirect('/base')
 
 
 
