@@ -14,7 +14,7 @@
             <a href="{{ url_for('blog', blog_id=blog.id) }}">
                     <h2 class="blog-blogtitle">
                       {{ blog.blogtitle }}</h2></a>
-                    <a href="{{ url_for('user', user_id=user.id) }}">
+                    <a href="{{ url_for('singleUser', user_id=user.id) }}">
                         <h3 class="blog-owner">
                             {{ blog.owner }}
                         </h3></a>

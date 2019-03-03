@@ -20,10 +20,6 @@ login_manager = LoginManager(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-blogs = db.Table('blogs',
-    db.Column('blog_id', db.Integer, db.ForeignKey('blog.id'), primary_key=True),
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
-)
 class Blog(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
@@ -203,21 +199,19 @@ def add_new_post():
 
 @app.route('/singleUser')
 def singleUser():
-    user = User.query.filter_by(id=User.username).first()
+   user = User.query.filter_by(id=User.username).first()
     
-    return render_template('singleUser.html', title='singleUser', user=user)
+   return render_template('singleUser.html', title='singleUser', user=user)
 
-@app.route('/blog/<int:blog_id>')
-def blog(blog_id):
-    blog = Blog.query.filter_by(id=blog_id).one()
+@app.route('/blog')
+def blog():
+   blog = Blog.query.filter_by(id=User.username).one()
 
-    return render_template('blog.html', blog=blog)
-    
+   return render_template('blog.html', blog=blog)
 
-@app.route('/blog/<int:user_id>')
-def blog_owner(user_id):
-    user = request.args.get('user')
-
+@app.route('/blog/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = request.args.get('username')
     return render_template('singleUser.html', user=user)
 
 @app.route('/base')

@@ -3,7 +3,7 @@
 {% block content %}
 <hr />
 <h1>{{blog.blogtitle}}</h1>
-<h4>Written by {{User.username}} on {{ post.date_posted.strftime('%B %d, %Y') }</h4>
+<h4>Written by <a href=“{{ url_for(‘singleUser’, user_id=user.id) }}“> on {{ post.date_posted.strftime('%B %d, %Y') }</h4>
 <article>
 <h3>{{blog.content|safe}}</h3>
 </article>
