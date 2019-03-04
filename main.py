@@ -203,12 +203,7 @@ def singleUser(username):
 def blog(blog_id):
     blog = Blog.query.filter_by(id=blog_id).one()
 
-    return render_template('blog.html', blog_id=blog.id)
-
-# @app.route('/blog/<int:user_id>', methods=['GET'])
-# def get_user(user_id):
-#     user = request.args.get('username')
-#     return render_template('singleUser.html', user=user)
+    return render_template('blog.html', blog=blog)
 
 @app.route('/base')
 def all_blogs():
