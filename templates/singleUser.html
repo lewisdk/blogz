@@ -4,23 +4,22 @@
 <hr />
 <h1>Blogs written by {{user.username}}</h1>
 
-{% if blogs|length == 0 %}
-<p>No blogs yet</p>
-{% else %}
-
     <ul>
-    {% for blog in user.blogs %}
-        <a href="{{ url_for('blog', blog_id==owner) }}">
-                <h2 class="blog-blogtitle">
-                  {{ blog.blogtitle }}</h2></a>
-                </br>
-                <h3 class="blog-content">
-                    {{ blog.content|safe }}
-                </h3>
-                  
-    {% endfor %}
+{% for blog in user.blogs %}
+    {% if user.blogs|length == 0 %}
+    <p>No blogs yet</p>
+    {% else %}
+    <a href="{{ url_for('blog', blog_id=blog.id) }}">
+            <h2 class="blog-blogtitle">
+                {{ blog.blogtitle }}</h2></a>
+            </br>
+            <h3 class="blog-content">
+                {{ blog.content|safe }}
+            </h3>
+    {% endif %}          
+{% endfor %}
     </ul>
 
-{% endif %}
+
 
 {% endblock %}

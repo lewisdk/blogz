@@ -3,29 +3,27 @@
 {% block content %}
 
     <h1>Blog Entries</h1>
-   
-    {% if blogs|length == 0 %}
-    <p>No blogs yet</p>
-    {% else %}
-
-        <ul>
-              <ul>
-        {% for blog in blogs%}
+    
+     <ul>
+    {% for blog in blogs %}
+        {% if blogs|length == 0 %}
+        <p>No blogs yet</p>
+        {% else %}
             <a href="{{ url_for('blog', blog_id=blog.id) }}">
                     <h2 class="blog-blogtitle">
-                      {{ blog.blogtitle }}</h2></a>
-                    <a href="{{ url_for('singleUser', username=user.username) }}">
+                        {{ blog.blogtitle }}</h2></a>
+                    <a href="{{ url_for('singleUser', username=blog.owner.username) }}">
                         <h3 class="blog-owner">
-                            {{ user.username }}
+                            {{ blog.owner.username }}
                         </h3></a>
                     <h3 class="blog-content">
                         {{ blog.content}}
-                    </h3>
-                      
-            {% endfor %}
-        </ul>
+                </h3>
+        {% endif %}     
+    {% endfor %}
+    </ul>
 
-    {% endif %}
+   
 
     {% endblock %}
 

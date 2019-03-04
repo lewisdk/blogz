@@ -175,22 +175,22 @@ def add_new_post():
     if request.method == 'POST':
         blogtitle = request.form["blogtitle"]
         content = request.form["content"]
-        owner = session['username']
+        owner = session['usernamer']
         
         if not blogtitle or not content:
             flash("All fields are required. Please try again.")
             return redirect(url_for('/newpost.html'))
         else:
-            post = Blog(blogtitle=blogtitle, content=content, owner=owner)
+            post = Blog(blogtitle, content, owner)
 
             db.session.add(post)
             db.session.commit()
 
-            posted = '/blog/'+ str(blog.id)
+            posted = '/blog/'+ str(post.id)
             
             flash('New entry was successfully posted!')
 
-            return redirect('posted')
+            return redirect(posted)
     return render_template('newpost.html')
 
 @app.route('/singleUser/<username>')
@@ -203,7 +203,7 @@ def singleUser(username):
 def blog(blog_id):
     blog = Blog.query.filter_by(id=blog_id).one()
 
-    return render_template('blog.html', blog=blog)
+    return render_template('blog.html', blog_id=blog.id)
 
 # @app.route('/blog/<int:user_id>', methods=['GET'])
 # def get_user(user_id):
@@ -212,7 +212,8 @@ def blog(blog_id):
 
 @app.route('/base')
 def all_blogs():
-    return render_template('base.html')
+    blogs = Blog.query.all()
+    return render_template('base.html', blogs=blogs)
 
 
 @app.route('/logout')

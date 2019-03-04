@@ -26,18 +26,19 @@
 
 <h1>Users</h1>
 
-{% if users|length == 0 %}
-<p>No Users yet</p>
-{% else %}
 
-    {% for user in users %}
+{% for user in users %}
+    {% if users|length == 0 %}
+    <p>No Users yet</p>
+    {% else %}
 
     <a href="{{ url_for('singleUser', username=user.username) }}">
                 <h2 class="user-username">
                   {{ user.username }}</h2></a>
-    {% endfor %}
+    {% endif %}
+{% endfor %}
     </ul>
 
-{% endif %}
+
 
 {% endblock %}

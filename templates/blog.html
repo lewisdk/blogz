@@ -3,10 +3,9 @@
 {% block content %}
 <hr />
 <h1>{{blog.blogtitle}}</h1>
-<h4>Written by <a href=“{{ url_for(‘singleUser’, username=blog.owner) }}“> on {{ post.date_posted.strftime('%B %d, %Y') }</h4>
+<h4>Written by <a href="{{ url_for(‘singleUser’, username=user.username) }}"> on {{ post.date_posted.strftime('%B %d, %Y') }</h4>
 <article>
 <h3>{{blog.content|safe}}</h3>
 </article>
-
 
 {% endblock %}
