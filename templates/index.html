@@ -7,13 +7,13 @@
     <nav class="navbar">
     <a href="{{ url_for('index') }}">Home</a>
     <a href="{{ url_for('all_blogs') }}">All Blogs</a>
-    <a href="{{ url_for('add') }}">Add New Blog</a>
+    <a href="{{ url_for('add_new_post') }}">Add New Blog</a>
     </nav>
 
     <nav class="navbar">
             <div style='float: right'>
-        {% if 'user' in session %}
-            {{ current_user }}
+        {% if 'username' in session %}
+            {{ session['username'] }}
             <a href="{{ url_for('logout')}}">Logout</a>
         {% else %}
             <a href="{{ url_for('login')}}">Login</a> 
@@ -32,7 +32,7 @@
 
     {% for user in users %}
 
-    <a href="{{ url_for('singleUser') }}">
+    <a href="{{ url_for('singleUser', username=user.username) }}">
                 <h2 class="user-username">
                   {{ user.username }}</h2></a>
     {% endfor %}
